@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Home Workout</title>
+
+  <!-- PWA / iOS home screen -->
+
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Workout" />
+  <meta name="theme-color" content="#000000" />
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body, #root { height: 100%; background: #000; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif; }
+    ::-webkit-scrollbar { display: none; }
+    button { font-family: inherit; }
+  </style>
+
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // ─── DATA ────────────────────────────────────────────────────────────────
+    const DAYS = [
+      {
+        id: 1, day: "Day 1", title: "Push", subtitle: "Chest · Shoulders · Triceps",
+        color: "#FF6B35", emoji: "🔥", schedule: "Mon",
+        exercises: [
+          { name: "Ring Push-ups", sets: "4 × 8–12",
+            progressions: ["Incline Push-ups (hands on chair)", "Regular Push-ups", "Feet Elevated Push-ups", "Ring Push-ups"] },
+          { name: "Pike Push-ups", sets: "3 × 8–10",
+            progressions: ["Pike Push-up bent knees", "Pike Push-up straight legs", "Feet elevated Pike Push-up"] },
+          { name: "Ring Dips", sets: "3 × 6–10",
+            progressions: ["Chair/Bench Dips", "Parallette Dips", "Ring Dips with band", "Full Ring Dips"] },
+          { name: "Parallette Push-ups", sets: "3 × 10–12",
+            progressions: ["Regular Push-ups", "Parallette Push-ups shallow", "Full deep range"] },
+          { name: "Diamond Push-ups", sets: "3 × 10–12",
+            progressions: ["Close Grip Push-ups on knees", "Close Grip Push-ups", "Diamond Push-ups"] },
+          { name: "Band Lateral Raise", sets: "3 × 12–15",
+            progressions: ["Lighter band / smaller range", "Full Band Lateral Raise"] },
+        ],
+      },
+      {
+        id: 2, day: "Day 2", title: "Pull", subtitle: "Back · Biceps",
+        color: "#4ECDC4", emoji: "💪", schedule: "Tue",
+        exercises: [
+          { name: "Pull-ups", sets: "4 × max",
+            progressions: ["Dead Hang 30 sec", "Scapular Pull-ups", "Negative Pull-ups (5 sec lower)", "Band Assisted Pull-ups", "Full Pull-ups"] },
+          { name: "Ring Rows (feet elevated)", sets: "4 × 8–12",
+            progressions: ["Body upright", "Body at 45°", "Horizontal", "Feet elevated"] },
+          { name: "Band Pull-Aparts", sets: "3 × 15",
+            progressions: ["Lighter band / shorter range", "Full Band Pull-Aparts"] },
+          { name: "Ring Bicep Curl", sets: "3 × 10–12",
+            progressions: ["Band Curl", "Ring Curl feet closer", "Full Ring Bicep Curl"] },
+          { name: "Scapular Pull-ups", sets: "3 × 10",
+            progressions: ["Dead hang scapular movement only", "Full Scapular Pull-ups"] },
+          { name: "Dead Hang", sets: "3 × 30–45 sec",
+            progressions: ["10 sec hold, build up", "30 sec hold", "45 sec hold"] },
+        ],
+      },
+      {
+        id: 3, day: "Day 3", title: "Legs + Core", subtitle: "Lower Body · Abs",
+        color: "#A855F7", emoji: "🦵", schedule: "Thu",
+        exercises: [
+          { name: "Bulgarian Split Squat", sets: "4 × 8–10/leg",
+            progressions: ["Assisted (hold wall)", "Bodyweight Split Squat", "Bulgarian Split Squat"] },
+          { name: "Jump Squats", sets: "3 × 12",
+            progressions: ["Slow bodyweight squat", "Regular squat", "Jump Squat"] },
+          { name: "Single Leg RDL", sets: "3 × 10/leg",
+            progressions: ["Both legs hip hinge", "Hand on wall", "Freestanding"] },
+          { name: "Lateral Band Walk", sets: "3 × 15/side",
+            progressions: ["Lighter band / shorter steps", "Full Lateral Band Walk"] },
+          { name: "Hollow Body Hold", sets: "3 × 30–45 sec",
+            progressions: ["Dead bug position", "Arms only raised", "Full Hollow Body"] },
+          { name: "Parallette L-Sit", sets: "3 × max hold",
+            progressions: ["Tuck sit feet on floor", "One leg extended", "Full L-Sit"] },
+          { name: "Side Plank", sets: "3 × 30 sec/side",
+            progressions: ["Side plank on knees", "Full Side Plank"] },
+        ],
+      },
+      {
+        id: 4, day: "Day 4", title: "Skill + Full Body", subtitle: "Movement · Skills",
+        color: "#F59E0B", emoji: "⚡", schedule: "Fri",
+        exercises: [
+          { name: "Animal Flow Warm-up", sets: "10 min",
+            progressions: ["Follow Leo Moves on YouTube"] },
+          { name: "Ring Support Hold", sets: "4 × max hold",
+            progressions: ["Band under feet", "Feet lightly touching floor", "Full Ring Support"] },
+          { name: "Parallette Tuck Planche", sets: "3 × 10–15 sec",
+            progressions: ["Tuck hold on floor", "Parallette tuck feet on floor", "Full Tuck Planche"] },
+          { name: "Band-assisted Pistol Squat", sets: "3 × 5/leg",
+            progressions: ["Hold door frame", "Box pistol to chair", "Band assisted", "Full Pistol"] },
+          { name: "Ring Face Pull", sets: "3 × 15",
+            progressions: ["More upright angle", "Lower body angle", "Full Ring Face Pull"] },
+          { name: "Hanging Leg Raise", sets: "3 × 10–15",
+            progressions: ["Hanging knee tuck", "Hanging knee raise", "Full Leg Raise"] },
+          { name: "Yoga Cool-down", sets: "10 min",
+            progressions: ["Hips · thoracic spine · shoulders"] },
+        ],
+      },
+    ];
+
+    const STORAGE_KEY = "workout-app-v1";
+    const WEEK_DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+    function getWeekStart() {
+      const d = new Date();
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      const mon = new Date(d.setDate(diff));
+      mon.setHours(0,0,0,0);
+      return mon.toISOString().split("T")[0];
+    }
+
+    function dateStr(d = new Date()) {
+      return d.toISOString().split("T")[0];
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch(e) { return null; }
+    }
+
+    function saveState(state) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+      catch(e) {}
+    }
+
+    // ─── PROGRESSION SHEET ───────────────────────────────────────────────────
+    function ProgressionSheet({ exercise, currentLevel, onSetLevel, onClose }) {
+      return (
+        <div
+          onClick={onClose}
+          style={{
+            position:"fixed", inset:0, zIndex:50,
+            display:"flex", alignItems:"flex-end",
+            background:"rgba(0,0,0,0.65)",
+            backdropFilter:"blur(10px)", WebkitBackdropFilter:"blur(10px)",
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width:"100%", background:"#1C1C1E",
+              borderRadius:"22px 22px 0 0",
+              padding:"12px 20px calc(34px + env(safe-area-inset-bottom))",
+              maxHeight:"80vh", overflowY:"auto",
+            }}
+          >
+            <div style={{display:"flex",justifyContent:"center",marginBottom:18}}>
+              <div style={{width:36,height:4,borderRadius:2,background:"#48484A"}}/>
+            </div>
+            <div style={{fontSize:11,color:"#8E8E93",textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>
+              Tap your current level
+            </div>
+            <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>{exercise.name}</div>
+            <div style={{fontSize:13,color:"#8E8E93",marginBottom:22}}>{exercise.sets}</div>
+
+            {exercise.progressions.map((p, i) => {
+              const isCurrent = i === currentLevel;
+              return (
+                <button
+                  key={i}
+                  onClick={() => { onSetLevel(i); onClose(); }}
+                  style={{
+                    width:"100%", textAlign:"left", border:"none",
+                    background: isCurrent ? "rgba(48,209,88,0.15)" : "#2C2C2E",
+                    borderRadius:14, padding:"14px 16px", marginBottom:10,
+                    display:"flex", alignItems:"center", gap:14, cursor:"pointer",
+                    outline:"none",
+                  }}
+                >
+                  <div style={{
+                    width:30, height:30, borderRadius:"50%", flexShrink:0,
+                    background: isCurrent ? "#30D158" : "#3A3A3C",
+                    display:"flex", alignItems:"center", justifyContent:"center",
+                    fontSize:13, fontWeight:700, color:"#fff",
+                  }}>
+                    {isCurrent ? "✓" : i+1}
+                  </div>
+                  <div style={{color: isCurrent ? "#30D158" : "#EBEBF5", fontSize:15, fontWeight: isCurrent ? 600 : 400}}>
+                    {p}
+                  </div>
+                </button>
+              );
+            })}
+            <div style={{fontSize:12,color:"#636366",marginTop:12,lineHeight:1.6}}>
+              Hit the top of the rep range with clean form on all sets → level up.
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ─── EXERCISE CARD ───────────────────────────────────────────────────────
+    function ExerciseCard({ exercise, color, completed, currentLevel, onToggle, onShowProgression }) {
+      const label = exercise.progressions[currentLevel] || exercise.progressions[0];
+      return (
+        <div style={{
+          background:"#1C1C1E", borderRadius:16, padding:"14px 16px",
+          marginBottom:10, display:"flex", alignItems:"center", gap:12,
+        }}>
+          <button
+            onClick={onToggle}
+            style={{
+              width:28, height:28, borderRadius:"50%", flexShrink:0,
+              border: completed ? "none" : "2px solid #48484A",
+              background: completed ? color : "transparent",
+              cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center",
+              outline:"none",
+            }}
+          >
+            {completed && <span style={{color:"#fff",fontSize:14,lineHeight:1}}>✓</span>}
+          </button>
+          <div style={{flex:1, minWidth:0}}>
+            <div style={{
+              fontSize:15, fontWeight:600,
+              color: completed ? "#636366" : "#EBEBF5",
+              textDecoration: completed ? "line-through" : "none",
+              marginBottom:3,
+            }}>
+              {exercise.name}
+            </div>
+            <div style={{fontSize:12,display:"flex",alignItems:"center",gap:6,overflow:"hidden"}}>
+              <span style={{color, fontWeight:700, flexShrink:0}}>{exercise.sets}</span>
+              <span style={{color:"#48484A"}}>·</span>
+              <span style={{color:"#636366",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{label}</span>
+            </div>
+          </div>
+          <button
+            onClick={onShowProgression}
+            style={{
+              background:"#2C2C2E", border:"none", borderRadius:8,
+              padding:"6px 12px", color:"#8E8E93", fontSize:12,
+              cursor:"pointer", fontWeight:700, flexShrink:0, outline:"none",
+            }}
+          >
+            L{currentLevel+1}
+          </button>
+        </div>
+      );
+    }
+
+    // ─── DAY VIEW ────────────────────────────────────────────────────────────
+    function DayView({ day, completedMap, progressions, onToggle, onSetLevel, onBack }) {
+      const [sheet, setSheet] = useState(null);
+      const done = day.exercises.filter(e => completedMap[`${day.id}-${e.name}`]).length;
+      const pct = Math.round((done / day.exercises.length) * 100);
+
+      return (
+        <div style={{minHeight:"100vh",background:"#000",paddingBottom:40}}>
+          <div style={{
+            background:`linear-gradient(160deg,${day.color}40,#000 55%)`,
+            padding:"calc(56px + env(safe-area-inset-top)) 20px 24px",
+          }}>
+            <button onClick={onBack} style={{
+              background:"none",border:"none",color:day.color,
+              fontSize:16,cursor:"pointer",marginBottom:18,padding:0,fontWeight:600,outline:"none",
+            }}>← Back</button>
+            <div style={{fontSize:12,color:"#8E8E93",marginBottom:4}}>{day.day} · {day.schedule}</div>
+            <div style={{fontSize:32,fontWeight:800,color:"#fff",letterSpacing:-0.5,marginBottom:4}}>
+              {day.emoji} {day.title}
+            </div>
+            <div style={{fontSize:15,color:"#8E8E93",marginBottom:22}}>{day.subtitle}</div>
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <div style={{flex:1,height:6,background:"#1C1C1E",borderRadius:3,overflow:"hidden"}}>
+                <div style={{
+                  height:"100%",width:`${pct}%`,background:pct===100?"#30D158":day.color,
+                  borderRadius:3,transition:"width 0.35s ease",
+                }}/>
+              </div>
+              <span style={{color:"#8E8E93",fontSize:13,flexShrink:0}}>{done}/{day.exercises.length}</span>
+            </div>
+          </div>
+
+          <div style={{padding:"16px 20px"}}>
+            {day.exercises.map(ex => {
+              const key = `${day.id}-${ex.name}`;
+              return (
+                <ExerciseCard
+                  key={ex.name}
+                  exercise={ex}
+                  color={day.color}
+                  completed={!!completedMap[key]}
+                  currentLevel={progressions[key] ?? 0}
+                  onToggle={() => onToggle(key)}
+                  onShowProgression={() => setSheet(ex)}
+                />
+              );
+            })}
+          </div>
+
+          {sheet && (
+            <ProgressionSheet
+              exercise={sheet}
+              currentLevel={progressions[`${day.id}-${sheet.name}`] ?? 0}
+              onSetLevel={lvl => onSetLevel(`${day.id}-${sheet.name}`, lvl)}
+              onClose={() => setSheet(null)}
+            />
+          )}
+        </div>
+      );
+    }
+
+    // ─── HOME ────────────────────────────────────────────────────────────────
+    function App() {
+      const [loaded, setLoaded]       = useState(false);
+      const [activeDay, setActiveDay] = useState(null);
+      const [completed, setCompleted] = useState({});
+      const [progressions, setProgressions] = useState({});
+      const [weekStart, setWeekStart] = useState(getWeekStart());
+      const [history, setHistory]     = useState([]);
+      const [saved, setSaved]         = useState(false);
+      const saveTimer = useRef(null);
+
+      // ── Load ──
+      useEffect(() => {
+        const data = loadState();
+        if (data) {
+          const curWeek = getWeekStart();
+          if (data.weekStart !== curWeek) {
+            setCompleted({});
+            setWeekStart(curWeek);
+          } else {
+            setCompleted(data.completed || {});
+            setWeekStart(data.weekStart || curWeek);
+          }
+          setProgressions(data.progressions || {});
+          setHistory(data.history || []);
+        }
+        setLoaded(true);
+      }, []);
+
+      // ── Save (debounced) ──
+      useEffect(() => {
+        if (!loaded) return;
+        clearTimeout(saveTimer.current);
+        saveTimer.current = setTimeout(() => {
+          saveState({ completed, progressions, weekStart, history });
+          setSaved(true);
+          setTimeout(() => setSaved(false), 1200);
+        }, 300);
+      }, [completed, progressions, weekStart, history, loaded]);
+
+      const toggleExercise = key => {
+        setCompleted(prev => {
+          const next = { ...prev, [key]: !prev[key] };
+          const [dayId] = key.split("-");
+          const day = DAYS.find(d => d.id === parseInt(dayId));
+          if (day) {
+            const allDone = day.exercises.every(e => next[`${day.id}-${e.name}`]);
+            const today = dateStr();
+            if (allDone) {
+              setHistory(h => {
+                if (h.some(x => x.date === today && x.dayId === day.id)) return h;
+                return [...h, { date: today, dayId: day.id }].slice(-90);
+              });
+            }
+          }
+          return next;
+        });
+      };
+
+      const setLevel = (key, lvl) => setProgressions(p => ({ ...p, [key]: lvl }));
+
+      const resetWeek = () => {
+        if (!window.confirm("Reset this week's check-offs? Progression levels stay.")) return;
+        setCompleted({});
+        setWeekStart(getWeekStart());
+      };
+
+      const getDayPct = day => {
+        const done = day.exercises.filter(e => completed[`${day.id}-${e.name}`]).length;
+        return Math.round((done / day.exercises.length) * 100);
+      };
+
+      const calcStreak = () => {
+        if (!history.length) return 0;
+        const dates = [...new Set(history.map(h => h.date))].sort().reverse();
+        let streak = 0;
+        let cur = new Date(); cur.setHours(0,0,0,0);
+        for (let i = 0; i < dates.length; i++) {
+          const exp = dateStr(cur);
+          const prev = dateStr(new Date(cur.getTime() - 86400000));
+          if (dates[i] === exp) {
+            streak++;
+            cur = new Date(cur.getTime() - 86400000);
+          } else if (i === 0 && dates[i] === prev) {
+            streak++;
+            cur = new Date(cur.getTime() - 86400000 * 2);
+          } else break;
+        }
+        return streak;
+      };
+
+      if (!loaded) return (
+        <div style={{
+          minHeight:"100vh",background:"#000",
+          display:"flex",alignItems:"center",justifyContent:"center",
+          color:"#636366",fontSize:14,
+        }}>Loading…</div>
+      );
+
+      if (activeDay) return (
+        <DayView
+          day={activeDay}
+          completedMap={completed}
+          progressions={progressions}
+          onToggle={toggleExercise}
+          onSetLevel={setLevel}
+          onBack={() => setActiveDay(null)}
+        />
+      );
+
+      const todayName = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][new Date().getDay()];
+      const weekDone = DAYS.filter(d => d.exercises.every(e => completed[`${d.id}-${e.name}`])).length;
+      const streak = calcStreak();
+
+      return (
+        <div style={{minHeight:"100vh",background:"#000",paddingBottom:40}}>
+
+          {/* Save badge */}
+          {saved && (
+            <div style={{
+              position:"fixed",top:"calc(14px + env(safe-area-inset-top))",right:16,zIndex:100,
+              background:"#1C1C1E",color:"#30D158",
+              fontSize:11,padding:"5px 10px",borderRadius:12,fontWeight:700,
+            }}>✓ Saved</div>
+          )}
+
+          {/* Header */}
+          <div style={{padding:"calc(56px + env(safe-area-inset-top)) 20px 8px"}}>
+            <div style={{fontSize:12,color:"#8E8E93",marginBottom:4,letterSpacing:0.5}}>YOUR PROGRAM</div>
+            <div style={{fontSize:34,fontWeight:800,color:"#fff",letterSpacing:-1}}>Home Workout</div>
+            <div style={{fontSize:15,color:"#636366",marginTop:4}}>4 days · Mon Tue Thu Fri</div>
+          </div>
+
+          {/* Stats */}
+          <div style={{display:"flex",gap:10,padding:"20px 20px 4px"}}>
+            {[
+              { label:"Streak", value:streak, unit:"days", color:"#FF6B35" },
+              { label:"This Week", value:weekDone, unit:"/4", color:"#30D158" },
+            ].map(s => (
+              <div key={s.label} style={{flex:1,background:"#1C1C1E",borderRadius:16,padding:"14px 16px"}}>
+                <div style={{fontSize:11,color:"#8E8E93",textTransform:"uppercase",letterSpacing:0.5,marginBottom:6}}>{s.label}</div>
+                <div style={{fontSize:26,fontWeight:800,color:s.color}}>
+                  {s.value}
+                  <span style={{fontSize:14,color:"#636366",fontWeight:500,marginLeft:3}}>{s.unit}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Week strip */}
+          <div style={{display:"flex",gap:8,padding:"16px 20px",overflowX:"auto"}}>
+            {WEEK_DAYS.map(d => {
+              const dayData = DAYS.find(wd => wd.schedule === d);
+              const isToday = d === todayName;
+              const pct = dayData ? getDayPct(dayData) : 0;
+              return (
+                <div
+                  key={d}
+                  onClick={() => dayData && setActiveDay(dayData)}
+                  style={{flexShrink:0,width:44,textAlign:"center",cursor:dayData?"pointer":"default"}}
+                >
+                  <div style={{fontSize:11,color:isToday?"#fff":"#636366",marginBottom:6,fontWeight:isToday?700:400}}>
+                    {d}
+                  </div>
+                  <div style={{
+                    width:44,height:44,borderRadius:"50%",
+                    background:dayData?`${dayData.color}22`:"#1C1C1E",
+                    border:isToday?`2px solid ${dayData?.color||"#636366"}`:"2px solid transparent",
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                    fontSize:18,position:"relative",
+                  }}>
+                    {dayData ? dayData.emoji : <span style={{color:"#636366",fontSize:11}}>—</span>}
+                    {pct===100 && (
+                      <div style={{
+                        position:"absolute",top:-2,right:-2,
+                        width:15,height:15,borderRadius:"50%",
+                        background:"#30D158",border:"2px solid #000",
+                        display:"flex",alignItems:"center",justifyContent:"center",
+                        fontSize:9,color:"#fff",
+                      }}>✓</div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Day cards */}
+          <div style={{padding:"8px 20px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div style={{fontSize:20,fontWeight:700,color:"#fff"}}>This Week</div>
+              <button onClick={resetWeek} style={{
+                background:"none",border:"none",color:"#8E8E93",
+                fontSize:13,cursor:"pointer",fontWeight:500,outline:"none",
+              }}>Reset week</button>
+            </div>
+
+            {DAYS.map(day => {
+              const pct = getDayPct(day);
+              return (
+                <div
+                  key={day.id}
+                  onClick={() => setActiveDay(day)}
+                  style={{
+                    background:"#1C1C1E",borderRadius:20,padding:18,
+                    marginBottom:12,cursor:"pointer",position:"relative",overflow:"hidden",
+                  }}
+                >
+                  <div style={{
+                    position:"absolute",top:0,left:0,bottom:0,width:4,
+                    background:day.color,borderRadius:"20px 0 0 20px",
+                  }}/>
+                  <div style={{paddingLeft:8}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                      <div>
+                        <div style={{fontSize:12,color:"#636366",marginBottom:2}}>{day.day} · {day.schedule}</div>
+                        <div style={{fontSize:20,fontWeight:700,color:"#fff"}}>{day.emoji} {day.title}</div>
+                        <div style={{fontSize:13,color:"#8E8E93",marginTop:2}}>{day.subtitle}</div>
+                      </div>
+                      <div style={{
+                        fontSize:12,color:day.color,fontWeight:700,
+                        background:`${day.color}18`,padding:"4px 10px",borderRadius:20,flexShrink:0,
+                      }}>
+                        {day.exercises.length} ex
+                      </div>
+                    </div>
+                    <div style={{marginTop:14}}>
+                      <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                        <span style={{fontSize:12,color:"#636366"}}>Progress</span>
+                        <span style={{fontSize:12,color:pct===100?"#30D158":"#636366"}}>
+                          {pct===100?"Complete ✓":`${pct}%`}
+                        </span>
+                      </div>
+                      <div style={{height:4,background:"#2C2C2E",borderRadius:2,overflow:"hidden"}}>
+                        <div style={{
+                          height:"100%",width:`${pct}%`,
+                          background:pct===100?"#30D158":day.color,
+                          borderRadius:2,transition:"width 0.35s ease",
+                        }}/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Tip */}
+            <div style={{background:"#1C1C1E",borderRadius:20,padding:18,marginTop:4}}>
+              <div style={{fontSize:13,color:"#FF6B35",fontWeight:700,marginBottom:8}}>💡 How progressions work</div>
+              <div style={{fontSize:14,color:"#8E8E93",lineHeight:1.6}}>
+                Tap the <span style={{color:"#fff",fontWeight:700}}>L1 / L2 / …</span> button on any exercise to mark your current level. When you hit the top of the rep range with clean form on all sets, level up.
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+
+</body>
+</html>
