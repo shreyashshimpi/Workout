@@ -1,584 +1,616 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Home Workout</title>
-
-  <!-- PWA / iOS home screen -->
-
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Workout" />
-  <meta name="theme-color" content="#000000" />
-
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+  <title>Workout</title>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Workout"/>
+  <meta name="theme-color" content="#000000"/>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body, #root { height: 100%; background: #000; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif; }
-    ::-webkit-scrollbar { display: none; }
-    button { font-family: inherit; }
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body,#root{height:100%;background:#000}
+    body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",sans-serif}
+    ::-webkit-scrollbar{display:none}
+    button{font-family:inherit}
   </style>
-
 </head>
 <body>
-  <div id="root"></div>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef} = React;
 
-  <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+// ── WORKOUT DATA ──────────────────────────────────────────────────────────────
+const DAYS=[
+  {id:1,day:"Day 1",title:"Push",subtitle:"Chest · Shoulders · Triceps",color:"#FF6B35",emoji:"🔥",schedule:"Mon",exercises:[
+    {name:"Ring Push-ups",sets:"4 × 8–12",progressions:["Incline Push-ups (hands on chair)","Regular Push-ups","Feet Elevated Push-ups","Ring Push-ups"]},
+    {name:"Pike Push-ups",sets:"3 × 8–10",progressions:["Pike Push-up bent knees","Pike Push-up straight legs","Feet elevated Pike Push-up"]},
+    {name:"Ring Dips",sets:"3 × 6–10",progressions:["Chair/Bench Dips","Parallette Dips","Ring Dips with band","Full Ring Dips"]},
+    {name:"Parallette Push-ups",sets:"3 × 10–12",progressions:["Regular Push-ups","Parallette Push-ups shallow","Full deep range"]},
+    {name:"Diamond Push-ups",sets:"3 × 10–12",progressions:["Close Grip Push-ups on knees","Close Grip Push-ups","Diamond Push-ups"]},
+    {name:"Band Lateral Raise",sets:"3 × 12–15",progressions:["Lighter band / smaller range","Full Band Lateral Raise"]},
+  ]},
+  {id:2,day:"Day 2",title:"Pull",subtitle:"Back · Biceps",color:"#4ECDC4",emoji:"💪",schedule:"Tue",exercises:[
+    {name:"Pull-ups",sets:"4 × max",progressions:["Dead Hang 30 sec","Scapular Pull-ups","Negative Pull-ups (5 sec lower)","Band Assisted Pull-ups","Full Pull-ups"]},
+    {name:"Ring Rows (feet elevated)",sets:"4 × 8–12",progressions:["Body upright","Body at 45°","Horizontal","Feet elevated"]},
+    {name:"Band Pull-Aparts",sets:"3 × 15",progressions:["Lighter band / shorter range","Full Band Pull-Aparts"]},
+    {name:"Ring Bicep Curl",sets:"3 × 10–12",progressions:["Band Curl","Ring Curl feet closer","Full Ring Bicep Curl"]},
+    {name:"Scapular Pull-ups",sets:"3 × 10",progressions:["Dead hang scapular movement only","Full Scapular Pull-ups"]},
+    {name:"Dead Hang",sets:"3 × 30–45 sec",progressions:["10 sec hold build up","30 sec hold","45 sec hold"]},
+  ]},
+  {id:3,day:"Day 3",title:"Legs + Core",subtitle:"Lower Body · Abs",color:"#A855F7",emoji:"🦵",schedule:"Thu",exercises:[
+    {name:"Bulgarian Split Squat",sets:"4 × 8–10/leg",progressions:["Assisted (hold wall)","Bodyweight Split Squat","Bulgarian Split Squat"]},
+    {name:"Jump Squats",sets:"3 × 12",progressions:["Slow bodyweight squat","Regular squat","Jump Squat"]},
+    {name:"Single Leg RDL",sets:"3 × 10/leg",progressions:["Both legs hip hinge","Hand on wall","Freestanding"]},
+    {name:"Lateral Band Walk",sets:"3 × 15/side",progressions:["Lighter band / shorter steps","Full Lateral Band Walk"]},
+    {name:"Hollow Body Hold",sets:"3 × 30–45 sec",progressions:["Dead bug position","Arms only raised","Full Hollow Body"]},
+    {name:"Parallette L-Sit",sets:"3 × max hold",progressions:["Tuck sit feet on floor","One leg extended","Full L-Sit"]},
+    {name:"Side Plank",sets:"3 × 30 sec/side",progressions:["Side plank on knees","Full Side Plank"]},
+  ]},
+  {id:4,day:"Day 4",title:"Skill + Full Body",subtitle:"Movement · Skills",color:"#F59E0B",emoji:"⚡",schedule:"Fri",exercises:[
+    {name:"Animal Flow Warm-up",sets:"10 min",progressions:["Follow Leo Moves on YouTube"]},
+    {name:"Ring Support Hold",sets:"4 × max hold",progressions:["Band under feet","Feet lightly touching floor","Full Ring Support"]},
+    {name:"Parallette Tuck Planche",sets:"3 × 10–15 sec",progressions:["Tuck hold on floor","Parallette tuck feet on floor","Full Tuck Planche"]},
+    {name:"Band-assisted Pistol Squat",sets:"3 × 5/leg",progressions:["Hold door frame","Box pistol to chair","Band assisted","Full Pistol"]},
+    {name:"Ring Face Pull",sets:"3 × 15",progressions:["More upright angle","Lower body angle","Full Ring Face Pull"]},
+    {name:"Hanging Leg Raise",sets:"3 × 10–15",progressions:["Hanging knee tuck","Hanging knee raise","Full Leg Raise"]},
+    {name:"Yoga Cool-down",sets:"10 min",progressions:["Hips · thoracic spine · shoulders"]},
+  ]},
+];
 
-    // ─── DATA ────────────────────────────────────────────────────────────────
-    const DAYS = [
-      {
-        id: 1, day: "Day 1", title: "Push", subtitle: "Chest · Shoulders · Triceps",
-        color: "#FF6B35", emoji: "🔥", schedule: "Mon",
-        exercises: [
-          { name: "Ring Push-ups", sets: "4 × 8–12",
-            progressions: ["Incline Push-ups (hands on chair)", "Regular Push-ups", "Feet Elevated Push-ups", "Ring Push-ups"] },
-          { name: "Pike Push-ups", sets: "3 × 8–10",
-            progressions: ["Pike Push-up bent knees", "Pike Push-up straight legs", "Feet elevated Pike Push-up"] },
-          { name: "Ring Dips", sets: "3 × 6–10",
-            progressions: ["Chair/Bench Dips", "Parallette Dips", "Ring Dips with band", "Full Ring Dips"] },
-          { name: "Parallette Push-ups", sets: "3 × 10–12",
-            progressions: ["Regular Push-ups", "Parallette Push-ups shallow", "Full deep range"] },
-          { name: "Diamond Push-ups", sets: "3 × 10–12",
-            progressions: ["Close Grip Push-ups on knees", "Close Grip Push-ups", "Diamond Push-ups"] },
-          { name: "Band Lateral Raise", sets: "3 × 12–15",
-            progressions: ["Lighter band / smaller range", "Full Band Lateral Raise"] },
-        ],
-      },
-      {
-        id: 2, day: "Day 2", title: "Pull", subtitle: "Back · Biceps",
-        color: "#4ECDC4", emoji: "💪", schedule: "Tue",
-        exercises: [
-          { name: "Pull-ups", sets: "4 × max",
-            progressions: ["Dead Hang 30 sec", "Scapular Pull-ups", "Negative Pull-ups (5 sec lower)", "Band Assisted Pull-ups", "Full Pull-ups"] },
-          { name: "Ring Rows (feet elevated)", sets: "4 × 8–12",
-            progressions: ["Body upright", "Body at 45°", "Horizontal", "Feet elevated"] },
-          { name: "Band Pull-Aparts", sets: "3 × 15",
-            progressions: ["Lighter band / shorter range", "Full Band Pull-Aparts"] },
-          { name: "Ring Bicep Curl", sets: "3 × 10–12",
-            progressions: ["Band Curl", "Ring Curl feet closer", "Full Ring Bicep Curl"] },
-          { name: "Scapular Pull-ups", sets: "3 × 10",
-            progressions: ["Dead hang scapular movement only", "Full Scapular Pull-ups"] },
-          { name: "Dead Hang", sets: "3 × 30–45 sec",
-            progressions: ["10 sec hold, build up", "30 sec hold", "45 sec hold"] },
-        ],
-      },
-      {
-        id: 3, day: "Day 3", title: "Legs + Core", subtitle: "Lower Body · Abs",
-        color: "#A855F7", emoji: "🦵", schedule: "Thu",
-        exercises: [
-          { name: "Bulgarian Split Squat", sets: "4 × 8–10/leg",
-            progressions: ["Assisted (hold wall)", "Bodyweight Split Squat", "Bulgarian Split Squat"] },
-          { name: "Jump Squats", sets: "3 × 12",
-            progressions: ["Slow bodyweight squat", "Regular squat", "Jump Squat"] },
-          { name: "Single Leg RDL", sets: "3 × 10/leg",
-            progressions: ["Both legs hip hinge", "Hand on wall", "Freestanding"] },
-          { name: "Lateral Band Walk", sets: "3 × 15/side",
-            progressions: ["Lighter band / shorter steps", "Full Lateral Band Walk"] },
-          { name: "Hollow Body Hold", sets: "3 × 30–45 sec",
-            progressions: ["Dead bug position", "Arms only raised", "Full Hollow Body"] },
-          { name: "Parallette L-Sit", sets: "3 × max hold",
-            progressions: ["Tuck sit feet on floor", "One leg extended", "Full L-Sit"] },
-          { name: "Side Plank", sets: "3 × 30 sec/side",
-            progressions: ["Side plank on knees", "Full Side Plank"] },
-        ],
-      },
-      {
-        id: 4, day: "Day 4", title: "Skill + Full Body", subtitle: "Movement · Skills",
-        color: "#F59E0B", emoji: "⚡", schedule: "Fri",
-        exercises: [
-          { name: "Animal Flow Warm-up", sets: "10 min",
-            progressions: ["Follow Leo Moves on YouTube"] },
-          { name: "Ring Support Hold", sets: "4 × max hold",
-            progressions: ["Band under feet", "Feet lightly touching floor", "Full Ring Support"] },
-          { name: "Parallette Tuck Planche", sets: "3 × 10–15 sec",
-            progressions: ["Tuck hold on floor", "Parallette tuck feet on floor", "Full Tuck Planche"] },
-          { name: "Band-assisted Pistol Squat", sets: "3 × 5/leg",
-            progressions: ["Hold door frame", "Box pistol to chair", "Band assisted", "Full Pistol"] },
-          { name: "Ring Face Pull", sets: "3 × 15",
-            progressions: ["More upright angle", "Lower body angle", "Full Ring Face Pull"] },
-          { name: "Hanging Leg Raise", sets: "3 × 10–15",
-            progressions: ["Hanging knee tuck", "Hanging knee raise", "Full Leg Raise"] },
-          { name: "Yoga Cool-down", sets: "10 min",
-            progressions: ["Hips · thoracic spine · shoulders"] },
-        ],
-      },
-    ];
+// ── NUTRITION DATA ────────────────────────────────────────────────────────────
+const SMOOTHIES=[
+  {id:"chocolate",name:"Chocolate",emoji:"🍫",items:["1 scoop whey","1 banana","1 tbsp cocoa powder","200ml milk"],kcal:300,protein:30},
+  {id:"pb-banana",name:"PB Banana",emoji:"🥜",items:["1 scoop whey","1 banana","1 tbsp peanut butter","200ml milk"],kcal:350,protein:30},
+  {id:"berry",name:"Berry",emoji:"🫐",items:["1 scoop whey","handful frozen berries","150g Greek yogurt","200ml milk"],kcal:300,protein:32},
+  {id:"strawberry",name:"Strawberry Cream",emoji:"🍓",items:["1 scoop whey","frozen strawberries","150g Greek yogurt","1 tsp honey","200ml milk"],kcal:310,protein:30},
+  {id:"banana-oat",name:"Banana Oat",emoji:"🌾",items:["1 scoop whey","1 banana","2 tbsp oats","200ml milk","pinch cinnamon"],kcal:340,protein:30},
+];
 
-    const STORAGE_KEY = "workout-app-v1";
-    const WEEK_DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const LUNCHES=[
+  {id:"chole-rice",name:"Chole + Rice",emoji:"🫘",items:["1 cup cooked chole","1 cup rice"],kcal:480,protein:22,note:"Batch cook — lasts 3 days"},
+  {id:"rajma-rice",name:"Rajma + Rice",emoji:"🫘",items:["1 cup cooked rajma","1 cup rice","1 boiled egg"],kcal:500,protein:26,note:"Add egg for extra protein"},
+  {id:"palak-chicken",name:"Palak Chicken + Rice",emoji:"🍗",items:["150g chicken in palak sauce","1 cup rice"],kcal:520,protein:42,note:"Best protein day"},
+  {id:"mushroom-egg",name:"Mushroom Egg Bhurji + Tortilla",emoji:"🍳",items:["2 eggs scrambled","150g mushrooms","1 protein tortilla"],kcal:400,protein:28,note:"15 min cook"},
+  {id:"paneer-biryani",name:"Paneer Biryani",emoji:"🍛",items:["150g paneer","1.5 cups biryani rice"],kcal:600,protein:30,note:"Weekend treat"},
+  {id:"egg-fried-rice",name:"Egg Fried Rice",emoji:"🍳",items:["2 eggs","1 cup rice","mixed veg","soy sauce"],kcal:450,protein:22,note:"Fast desi style"},
+  {id:"palak-paneer",name:"Palak Paneer + Tortilla",emoji:"🧀",items:["150g paneer","palak sauce","1 protein tortilla"],kcal:500,protein:28,note:"Rich and filling"},
+  {id:"chicken-curry",name:"Chicken Curry + Rice",emoji:"🍗",items:["150g chicken curry","1 cup rice"],kcal:550,protein:42,note:"Batch cook"},
+  {id:"mushroom-palak",name:"Mushroom Palak + Eggs + Rice",emoji:"🍄",items:["150g mushroom palak","2 boiled eggs","1 cup rice"],kcal:450,protein:24,note:"Pure veg day"},
+  {id:"egg-curry",name:"Egg Curry + Rice",emoji:"🥚",items:["2 egg curry","1 cup rice"],kcal:440,protein:24,note:"Quick option"},
+  {id:"office-roll",name:"Chicken Fillet Roll",emoji:"🥖",items:["chicken fillet roll","lettuce, onion, cheese"],kcal:550,protein:38,note:"Office days — Wed/Thu"},
+];
 
-    function getWeekStart() {
-      const d = new Date();
-      const day = d.getDay();
-      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-      const mon = new Date(d.setDate(diff));
-      mon.setHours(0,0,0,0);
-      return mon.toISOString().split("T")[0];
-    }
+const SNACKS=[
+  {id:"yogurt-fruit",name:"Greek Yogurt + Fruit",emoji:"🍎",items:["150g Greek yogurt","1 fruit"],kcal:200,protein:15},
+  {id:"cottage-nuts",name:"Cottage Cheese + Nuts",emoji:"🧀",items:["100g cottage cheese","10 almonds"],kcal:200,protein:18},
+  {id:"protein-bar",name:"Protein Bar + Fruit",emoji:"🍫",items:["1 protein bar","1 fruit"],kcal:250,protein:22},
+  {id:"boiled-eggs",name:"Boiled Eggs + Fruit",emoji:"🥚",items:["2 boiled eggs","1 fruit"],kcal:210,protein:16},
+];
 
-    function dateStr(d = new Date()) {
-      return d.toISOString().split("T")[0];
-    }
+const DINNER={id:"dinner",name:"Dal + Rice",emoji:"🌙",items:["1 cup dal (rotate masoor/moong/toor)","1 cup rice","+ 1 boiled egg for extra 6g protein"],kcal:400,protein:18};
 
-    function loadState() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : null;
-      } catch(e) { return null; }
-    }
+// ── SUPPLEMENT DATA ───────────────────────────────────────────────────────────
+const SUPPLEMENTS=[
+  {id:"l-tyrosine",name:"L-Tyrosine",dose:"500mg",time:"Morning",color:"#FF9500",emoji:"🧠",note:"Take before breakfast — dopamine support"},
+  {id:"d3k2",name:"D3 + K2",dose:"4000 IU",time:"Morning",color:"#FFD60A",emoji:"☀️",note:"Take with fatty meal for absorption"},
+  {id:"omega3",name:"Omega-3",dose:"2g",time:"Morning",color:"#0A84FF",emoji:"🐟",note:"Take with breakfast"},
+  {id:"ashwagandha",name:"Ashwagandha",dose:"300–600mg",time:"Daily",color:"#30D158",emoji:"🌿",note:"Cortisol + stress — any time with food"},
+  {id:"ltheanine",name:"L-Theanine",dose:"200mg",time:"As needed",color:"#BF5AF2",emoji:"🌊",note:"Take when anxiety or cravings hit"},
+  {id:"magnesium",name:"Magnesium Glycinate",dose:"400mg",time:"Before bed",color:"#636366",emoji:"🌙",note:"Critical for sleep — always before bed"},
+];
 
-    function saveState(state) {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-      catch(e) {}
-    }
+const SUPP_GROUPS=["Morning","Daily","As needed","Before bed"];
 
-    // ─── PROGRESSION SHEET ───────────────────────────────────────────────────
-    function ProgressionSheet({ exercise, currentLevel, onSetLevel, onClose }) {
-      return (
-        <div
-          onClick={onClose}
-          style={{
-            position:"fixed", inset:0, zIndex:50,
-            display:"flex", alignItems:"flex-end",
-            background:"rgba(0,0,0,0.65)",
-            backdropFilter:"blur(10px)", WebkitBackdropFilter:"blur(10px)",
-          }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              width:"100%", background:"#1C1C1E",
-              borderRadius:"22px 22px 0 0",
-              padding:"12px 20px calc(34px + env(safe-area-inset-bottom))",
-              maxHeight:"80vh", overflowY:"auto",
-            }}
-          >
-            <div style={{display:"flex",justifyContent:"center",marginBottom:18}}>
-              <div style={{width:36,height:4,borderRadius:2,background:"#48484A"}}/>
-            </div>
-            <div style={{fontSize:11,color:"#8E8E93",textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>
-              Tap your current level
-            </div>
-            <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>{exercise.name}</div>
-            <div style={{fontSize:13,color:"#8E8E93",marginBottom:22}}>{exercise.sets}</div>
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+const KEY="workout-app-v3";
+function getWeekStart(){const d=new Date(),day=d.getDay(),diff=d.getDate()-day+(day===0?-6:1),mon=new Date(d.setDate(diff));mon.setHours(0,0,0,0);return mon.toISOString().split("T")[0];}
+function dateStr(d=new Date()){return d.toISOString().split("T")[0];}
+function tomorrowStr(){const d=new Date();d.setDate(d.getDate()+1);return dateStr(d);}
+function dayName(ds){const d=new Date(ds+"T12:00:00");return["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];}
+function load(){try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null;}catch(e){return null;}}
+function save(s){try{localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}}
 
-            {exercise.progressions.map((p, i) => {
-              const isCurrent = i === currentLevel;
-              return (
-                <button
-                  key={i}
-                  onClick={() => { onSetLevel(i); onClose(); }}
-                  style={{
-                    width:"100%", textAlign:"left", border:"none",
-                    background: isCurrent ? "rgba(48,209,88,0.15)" : "#2C2C2E",
-                    borderRadius:14, padding:"14px 16px", marginBottom:10,
-                    display:"flex", alignItems:"center", gap:14, cursor:"pointer",
-                    outline:"none",
-                  }}
-                >
-                  <div style={{
-                    width:30, height:30, borderRadius:"50%", flexShrink:0,
-                    background: isCurrent ? "#30D158" : "#3A3A3C",
-                    display:"flex", alignItems:"center", justifyContent:"center",
-                    fontSize:13, fontWeight:700, color:"#fff",
-                  }}>
-                    {isCurrent ? "✓" : i+1}
-                  </div>
-                  <div style={{color: isCurrent ? "#30D158" : "#EBEBF5", fontSize:15, fontWeight: isCurrent ? 600 : 400}}>
-                    {p}
-                  </div>
-                </button>
-              );
-            })}
-            <div style={{fontSize:12,color:"#636366",marginTop:12,lineHeight:1.6}}>
-              Hit the top of the rep range with clean form on all sets → level up.
-            </div>
-          </div>
+// ── BOTTOM SHEET WRAPPER ──────────────────────────────────────────────────────
+function Sheet({onClose,children,title}){
+  return(
+    <div onClick={onClose} style={{position:"fixed",inset:0,zIndex:50,display:"flex",alignItems:"flex-end",background:"rgba(0,0,0,0.65)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)"}}>
+      <div onClick={e=>e.stopPropagation()} style={{width:"100%",background:"#1C1C1E",borderRadius:"22px 22px 0 0",maxHeight:"90vh",display:"flex",flexDirection:"column"}}>
+        <div style={{padding:"12px 20px 0",flexShrink:0}}>
+          <div style={{display:"flex",justifyContent:"center",marginBottom:14}}><div style={{width:36,height:4,borderRadius:2,background:"#48484A"}}/></div>
+          {title&&<div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:16}}>{title}</div>}
         </div>
-      );
-    }
-
-    // ─── EXERCISE CARD ───────────────────────────────────────────────────────
-    function ExerciseCard({ exercise, color, completed, currentLevel, onToggle, onShowProgression }) {
-      const label = exercise.progressions[currentLevel] || exercise.progressions[0];
-      return (
-        <div style={{
-          background:"#1C1C1E", borderRadius:16, padding:"14px 16px",
-          marginBottom:10, display:"flex", alignItems:"center", gap:12,
-        }}>
-          <button
-            onClick={onToggle}
-            style={{
-              width:28, height:28, borderRadius:"50%", flexShrink:0,
-              border: completed ? "none" : "2px solid #48484A",
-              background: completed ? color : "transparent",
-              cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center",
-              outline:"none",
-            }}
-          >
-            {completed && <span style={{color:"#fff",fontSize:14,lineHeight:1}}>✓</span>}
-          </button>
-          <div style={{flex:1, minWidth:0}}>
-            <div style={{
-              fontSize:15, fontWeight:600,
-              color: completed ? "#636366" : "#EBEBF5",
-              textDecoration: completed ? "line-through" : "none",
-              marginBottom:3,
-            }}>
-              {exercise.name}
-            </div>
-            <div style={{fontSize:12,display:"flex",alignItems:"center",gap:6,overflow:"hidden"}}>
-              <span style={{color, fontWeight:700, flexShrink:0}}>{exercise.sets}</span>
-              <span style={{color:"#48484A"}}>·</span>
-              <span style={{color:"#636366",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{label}</span>
-            </div>
-          </div>
-          <button
-            onClick={onShowProgression}
-            style={{
-              background:"#2C2C2E", border:"none", borderRadius:8,
-              padding:"6px 12px", color:"#8E8E93", fontSize:12,
-              cursor:"pointer", fontWeight:700, flexShrink:0, outline:"none",
-            }}
-          >
-            L{currentLevel+1}
-          </button>
+        <div style={{overflowY:"auto",paddingBottom:"calc(24px + env(safe-area-inset-bottom))"}}>
+          {children}
         </div>
-      );
-    }
+      </div>
+    </div>
+  );
+}
 
-    // ─── DAY VIEW ────────────────────────────────────────────────────────────
-    function DayView({ day, completedMap, progressions, onToggle, onSetLevel, onBack }) {
-      const [sheet, setSheet] = useState(null);
-      const done = day.exercises.filter(e => completedMap[`${day.id}-${e.name}`]).length;
-      const pct = Math.round((done / day.exercises.length) * 100);
+// ── TAB BAR ───────────────────────────────────────────────────────────────────
+function TabBar({active,onChange}){
+  const tabs=[{id:"workout",emoji:"💪",label:"Workout"},{id:"nutrition",emoji:"🥗",label:"Nutrition"},{id:"supps",emoji:"💊",label:"Supps"}];
+  return(
+    <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:40,background:"rgba(18,18,18,0.96)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderTop:"1px solid #2C2C2E",display:"flex",padding:"8px 0 calc(8px + env(safe-area-inset-bottom))"}}>
+      {tabs.map(t=>(
+        <button key={t.id} onClick={()=>onChange(t.id)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"none",border:"none",cursor:"pointer",outline:"none",color:active===t.id?"#fff":"#636366"}}>
+          <span style={{fontSize:22}}>{t.emoji}</span>
+          <span style={{fontSize:10,fontWeight:active===t.id?700:400,letterSpacing:0.2}}>{t.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
 
-      return (
-        <div style={{minHeight:"100vh",background:"#000",paddingBottom:40}}>
-          <div style={{
-            background:`linear-gradient(160deg,${day.color}40,#000 55%)`,
-            padding:"calc(56px + env(safe-area-inset-top)) 20px 24px",
-          }}>
-            <button onClick={onBack} style={{
-              background:"none",border:"none",color:day.color,
-              fontSize:16,cursor:"pointer",marginBottom:18,padding:0,fontWeight:600,outline:"none",
-            }}>← Back</button>
-            <div style={{fontSize:12,color:"#8E8E93",marginBottom:4}}>{day.day} · {day.schedule}</div>
-            <div style={{fontSize:32,fontWeight:800,color:"#fff",letterSpacing:-0.5,marginBottom:4}}>
-              {day.emoji} {day.title}
-            </div>
-            <div style={{fontSize:15,color:"#8E8E93",marginBottom:22}}>{day.subtitle}</div>
-            <div style={{display:"flex",alignItems:"center",gap:12}}>
-              <div style={{flex:1,height:6,background:"#1C1C1E",borderRadius:3,overflow:"hidden"}}>
-                <div style={{
-                  height:"100%",width:`${pct}%`,background:pct===100?"#30D158":day.color,
-                  borderRadius:3,transition:"width 0.35s ease",
-                }}/>
+// ── WORKOUT COMPONENTS ────────────────────────────────────────────────────────
+function ProgressionSheet({exercise,currentLevel,onSetLevel,onClose}){
+  return(
+    <Sheet onClose={onClose} title={exercise.name}>
+      <div style={{padding:"0 20px"}}>
+        <div style={{fontSize:13,color:"#8E8E93",marginBottom:20}}>{exercise.sets} · Tap your current level</div>
+        {exercise.progressions.map((p,i)=>{
+          const cur=i===currentLevel;
+          return(
+            <button key={i} onClick={()=>{onSetLevel(i);onClose();}} style={{width:"100%",textAlign:"left",border:"none",background:cur?"rgba(48,209,88,0.15)":"#2C2C2E",borderRadius:14,padding:"14px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:14,cursor:"pointer",outline:"none"}}>
+              <div style={{width:30,height:30,borderRadius:"50%",flexShrink:0,background:cur?"#30D158":"#3A3A3C",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"#fff"}}>{cur?"✓":i+1}</div>
+              <div style={{color:cur?"#30D158":"#EBEBF5",fontSize:15,fontWeight:cur?600:400}}>{p}</div>
+            </button>
+          );
+        })}
+        <div style={{fontSize:12,color:"#636366",marginTop:8,lineHeight:1.6,paddingBottom:4}}>Hit the top of the rep range with clean form → level up.</div>
+      </div>
+    </Sheet>
+  );
+}
+
+function ExerciseCard({exercise,color,completed,currentLevel,onToggle,onShowProgression}){
+  const label=exercise.progressions[currentLevel]||exercise.progressions[0];
+  return(
+    <div style={{background:"#1C1C1E",borderRadius:16,padding:"14px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:12}}>
+      <button onClick={onToggle} style={{width:28,height:28,borderRadius:"50%",flexShrink:0,border:completed?"none":"2px solid #48484A",background:completed?color:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",outline:"none"}}>
+        {completed&&<span style={{color:"#fff",fontSize:14,lineHeight:1}}>✓</span>}
+      </button>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontSize:15,fontWeight:600,color:completed?"#636366":"#EBEBF5",textDecoration:completed?"line-through":"none",marginBottom:3}}>{exercise.name}</div>
+        <div style={{fontSize:12,display:"flex",alignItems:"center",gap:6,overflow:"hidden"}}>
+          <span style={{color,fontWeight:700,flexShrink:0}}>{exercise.sets}</span>
+          <span style={{color:"#48484A"}}>·</span>
+          <span style={{color:"#636366",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{label}</span>
+        </div>
+      </div>
+      <button onClick={onShowProgression} style={{background:"#2C2C2E",border:"none",borderRadius:8,padding:"6px 12px",color:"#8E8E93",fontSize:12,cursor:"pointer",fontWeight:700,flexShrink:0,outline:"none"}}>L{currentLevel+1}</button>
+    </div>
+  );
+}
+
+function DayView({day,completedMap,progressions,onToggle,onSetLevel,onBack}){
+  const [sheet,setSheet]=useState(null);
+  const done=day.exercises.filter(e=>completedMap[`${day.id}-${e.name}`]).length;
+  const pct=Math.round((done/day.exercises.length)*100);
+  return(
+    <div style={{minHeight:"100vh",background:"#000",paddingBottom:100}}>
+      <div style={{background:`linear-gradient(160deg,${day.color}40,#000 55%)`,padding:"calc(54px + env(safe-area-inset-top)) 20px 24px"}}>
+        <button onClick={onBack} style={{background:"none",border:"none",color:day.color,fontSize:16,cursor:"pointer",marginBottom:18,padding:0,fontWeight:600,outline:"none"}}>← Back</button>
+        <div style={{fontSize:12,color:"#8E8E93",marginBottom:4}}>{day.day} · {day.schedule}</div>
+        <div style={{fontSize:32,fontWeight:800,color:"#fff",letterSpacing:-0.5,marginBottom:4}}>{day.emoji} {day.title}</div>
+        <div style={{fontSize:15,color:"#8E8E93",marginBottom:22}}>{day.subtitle}</div>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div style={{flex:1,height:6,background:"#1C1C1E",borderRadius:3,overflow:"hidden"}}>
+            <div style={{height:"100%",width:`${pct}%`,background:pct===100?"#30D158":day.color,borderRadius:3,transition:"width 0.35s ease"}}/>
+          </div>
+          <span style={{color:"#8E8E93",fontSize:13,flexShrink:0}}>{done}/{day.exercises.length}</span>
+        </div>
+      </div>
+      <div style={{padding:"16px 20px"}}>
+        {day.exercises.map(ex=>{
+          const k=`${day.id}-${ex.name}`;
+          return <ExerciseCard key={ex.name} exercise={ex} color={day.color} completed={!!completedMap[k]} currentLevel={progressions[k]??0} onToggle={()=>onToggle(k)} onShowProgression={()=>setSheet(ex)}/>;
+        })}
+      </div>
+      {sheet&&<ProgressionSheet exercise={sheet} currentLevel={progressions[`${day.id}-${sheet.name}`]??0} onSetLevel={lvl=>onSetLevel(`${day.id}-${sheet.name}`,lvl)} onClose={()=>setSheet(null)}/>}
+    </div>
+  );
+}
+
+function WorkoutTab({completed,progressions,history,onToggle,onSetLevel,onResetWeek}){
+  const [activeDay,setActiveDay]=useState(null);
+  const today=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][new Date().getDay()];
+  const getDayPct=d=>{const done=d.exercises.filter(e=>completed[`${d.id}-${e.name}`]).length;return Math.round((done/d.exercises.length)*100);};
+  const weekDone=DAYS.filter(d=>d.exercises.every(e=>completed[`${d.id}-${e.name}`])).length;
+  const calcStreak=()=>{if(!history.length)return 0;const dates=[...new Set(history.map(h=>h.date))].sort().reverse();let s=0,cur=new Date();cur.setHours(0,0,0,0);for(let i=0;i<dates.length;i++){const exp=dateStr(cur);if(dates[i]===exp){s++;cur=new Date(cur.getTime()-86400000);}else if(i===0&&dates[i]===dateStr(new Date(cur.getTime()-86400000))){s++;cur=new Date(cur.getTime()-86400000*2);}else break;}return s;};
+
+  if(activeDay) return <DayView day={activeDay} completedMap={completed} progressions={progressions} onToggle={onToggle} onSetLevel={onSetLevel} onBack={()=>setActiveDay(null)}/>;
+
+  return(
+    <div style={{minHeight:"100vh",background:"#000",paddingBottom:100}}>
+      <div style={{padding:"calc(54px + env(safe-area-inset-top)) 20px 8px"}}>
+        <div style={{fontSize:12,color:"#8E8E93",marginBottom:4,letterSpacing:0.5}}>YOUR PROGRAM</div>
+        <div style={{fontSize:34,fontWeight:800,color:"#fff",letterSpacing:-1}}>Home Workout</div>
+        <div style={{fontSize:15,color:"#636366",marginTop:4}}>4 days · Mon Tue Thu Fri</div>
+      </div>
+      <div style={{display:"flex",gap:10,padding:"16px 20px 4px"}}>
+        {[{label:"Streak",value:calcStreak(),unit:"days",color:"#FF6B35"},{label:"This Week",value:weekDone,unit:"/4",color:"#30D158"}].map(s=>(
+          <div key={s.label} style={{flex:1,background:"#1C1C1E",borderRadius:16,padding:"14px 16px"}}>
+            <div style={{fontSize:11,color:"#8E8E93",textTransform:"uppercase",letterSpacing:0.5,marginBottom:6}}>{s.label}</div>
+            <div style={{fontSize:26,fontWeight:800,color:s.color}}>{s.value}<span style={{fontSize:14,color:"#636366",fontWeight:500,marginLeft:3}}>{s.unit}</span></div>
+          </div>
+        ))}
+      </div>
+      <div style={{display:"flex",gap:8,padding:"16px 20px",overflowX:"auto"}}>
+        {["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=>{
+          const dd=DAYS.find(w=>w.schedule===d);
+          const isToday=d===today;
+          const pct=dd?getDayPct(dd):0;
+          return(
+            <div key={d} onClick={()=>dd&&setActiveDay(dd)} style={{flexShrink:0,width:44,textAlign:"center",cursor:dd?"pointer":"default"}}>
+              <div style={{fontSize:11,color:isToday?"#fff":"#636366",marginBottom:6,fontWeight:isToday?700:400}}>{d}</div>
+              <div style={{width:44,height:44,borderRadius:"50%",background:dd?`${dd.color}22`:"#1C1C1E",border:isToday?`2px solid ${dd?.color||"#636366"}`:"2px solid transparent",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,position:"relative"}}>
+                {dd?dd.emoji:<span style={{color:"#636366",fontSize:11}}>—</span>}
+                {pct===100&&<div style={{position:"absolute",top:-2,right:-2,width:15,height:15,borderRadius:"50%",background:"#30D158",border:"2px solid #000",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:"#fff"}}>✓</div>}
               </div>
-              <span style={{color:"#8E8E93",fontSize:13,flexShrink:0}}>{done}/{day.exercises.length}</span>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{padding:"8px 20px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+          <div style={{fontSize:20,fontWeight:700,color:"#fff"}}>This Week</div>
+          <button onClick={onResetWeek} style={{background:"none",border:"none",color:"#8E8E93",fontSize:13,cursor:"pointer",fontWeight:500,outline:"none"}}>Reset week</button>
+        </div>
+        {DAYS.map(day=>{
+          const pct=getDayPct(day);
+          return(
+            <div key={day.id} onClick={()=>setActiveDay(day)} style={{background:"#1C1C1E",borderRadius:20,padding:18,marginBottom:12,cursor:"pointer",position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",top:0,left:0,bottom:0,width:4,background:day.color,borderRadius:"20px 0 0 20px"}}/>
+              <div style={{paddingLeft:8}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                  <div>
+                    <div style={{fontSize:12,color:"#636366",marginBottom:2}}>{day.day} · {day.schedule}</div>
+                    <div style={{fontSize:20,fontWeight:700,color:"#fff"}}>{day.emoji} {day.title}</div>
+                    <div style={{fontSize:13,color:"#8E8E93",marginTop:2}}>{day.subtitle}</div>
+                  </div>
+                  <div style={{fontSize:12,color:day.color,fontWeight:700,background:`${day.color}18`,padding:"4px 10px",borderRadius:20,flexShrink:0}}>{day.exercises.length} ex</div>
+                </div>
+                <div style={{marginTop:14}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                    <span style={{fontSize:12,color:"#636366"}}>Progress</span>
+                    <span style={{fontSize:12,color:pct===100?"#30D158":"#636366"}}>{pct===100?"Complete ✓":`${pct}%`}</span>
+                  </div>
+                  <div style={{height:4,background:"#2C2C2E",borderRadius:2,overflow:"hidden"}}>
+                    <div style={{height:"100%",width:`${pct}%`,background:pct===100?"#30D158":day.color,borderRadius:2,transition:"width 0.35s ease"}}/>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── MEAL PLANNER SHEET ────────────────────────────────────────────────────────
+function MealPlannerSheet({targetDate,existing,onSave,onClose}){
+  const [smoothie,setSmoothie]=useState(existing?.smoothie||null);
+  const [lunch,setLunch]=useState(existing?.lunch||null);
+  const [snack,setSnack]=useState(existing?.snack||null);
+
+  const selS=SMOOTHIES.find(s=>s.id===smoothie);
+  const selL=LUNCHES.find(l=>l.id===lunch);
+  const selSn=SNACKS.find(s=>s.id===snack);
+  const totalKcal=(selS?.kcal||0)+(selL?.kcal||0)+(selSn?.kcal||0)+DINNER.kcal;
+  const totalProt=(selS?.protein||0)+(selL?.protein||0)+(selSn?.protein||0)+DINNER.protein;
+  const over=totalKcal>1600;
+
+  const label=targetDate===dateStr()?"Today":targetDate===tomorrowStr()?"Tomorrow":dayName(targetDate);
+
+  function OptionCard({item,selected,onSelect,accent="#FF6B35"}){
+    return(
+      <button onClick={()=>onSelect(selected?null:item.id)} style={{flexShrink:0,width:140,background:selected?"rgba(255,107,53,0.15)":"#2C2C2E",border:selected?`1.5px solid ${accent}`:"1.5px solid transparent",borderRadius:14,padding:"12px 14px",textAlign:"left",cursor:"pointer",outline:"none",marginRight:10}}>
+        <div style={{fontSize:22,marginBottom:6}}>{item.emoji}</div>
+        <div style={{fontSize:13,fontWeight:700,color:selected?"#fff":"#EBEBF5",marginBottom:4,lineHeight:1.3}}>{item.name}</div>
+        <div style={{fontSize:11,color:selected?accent:"#636366"}}>{item.kcal} kcal · {item.protein}g protein</div>
+      </button>
+    );
+  }
+
+  function LunchRow({item,selected,onSelect}){
+    return(
+      <button onClick={()=>onSelect(selected?null:item.id)} style={{width:"100%",background:selected?"rgba(78,205,196,0.1)":"#2C2C2E",border:selected?"1.5px solid #4ECDC4":"1.5px solid transparent",borderRadius:14,padding:"12px 14px",textAlign:"left",cursor:"pointer",outline:"none",marginBottom:8,display:"flex",alignItems:"center",gap:12}}>
+        <span style={{fontSize:22,flexShrink:0}}>{item.emoji}</span>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:14,fontWeight:600,color:selected?"#fff":"#EBEBF5",marginBottom:2}}>{item.name}</div>
+          {item.note&&<div style={{fontSize:11,color:"#636366",marginBottom:2}}>{item.note}</div>}
+          <div style={{fontSize:11,color:selected?"#4ECDC4":"#636366"}}>{item.kcal} kcal · {item.protein}g protein</div>
+        </div>
+        {selected&&<span style={{color:"#4ECDC4",fontSize:16,flexShrink:0}}>✓</span>}
+      </button>
+    );
+  }
+
+  return(
+    <Sheet onClose={onClose} title={`Plan ${label}`}>
+      <div style={{padding:"0 20px"}}>
+
+        {/* Smoothie */}
+        <div style={{fontSize:13,color:"#FF9500",fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,marginBottom:10}}>🌅 Breakfast Smoothie</div>
+        <div style={{display:"flex",overflowX:"auto",marginBottom:20,paddingBottom:4}}>
+          {SMOOTHIES.map(s=><OptionCard key={s.id} item={s} selected={smoothie===s.id} onSelect={setSmoothie} accent="#FF9500"/>)}
+        </div>
+
+        {/* Lunch */}
+        <div style={{fontSize:13,color:"#4ECDC4",fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,marginBottom:10}}>☀️ Lunch</div>
+        {LUNCHES.map(l=><LunchRow key={l.id} item={l} selected={lunch===l.id} onSelect={setLunch}/>)}
+        <div style={{marginBottom:20}}/>
+
+        {/* Snack */}
+        <div style={{fontSize:13,color:"#30D158",fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,marginBottom:10}}>🥜 Evening Snack</div>
+        <div style={{display:"flex",overflowX:"auto",marginBottom:20,paddingBottom:4}}>
+          {SNACKS.map(s=><OptionCard key={s.id} item={s} selected={snack===s.id} onSelect={setSnack} accent="#30D158"/>)}
+        </div>
+
+        {/* Dinner fixed */}
+        <div style={{fontSize:13,color:"#A855F7",fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,marginBottom:10}}>🌙 Dinner (always)</div>
+        <div style={{background:"rgba(168,85,247,0.1)",border:"1.5px solid #A855F7",borderRadius:14,padding:"12px 14px",marginBottom:20}}>
+          <div style={{fontSize:14,fontWeight:600,color:"#fff",marginBottom:4}}>🌙 Dal + Rice</div>
+          <div style={{fontSize:12,color:"#8E8E93"}}>1 cup dal · 1 cup rice · ~400 kcal · 18g protein</div>
+        </div>
+
+        {/* Totals */}
+        <div style={{background:over?"rgba(255,69,58,0.1)":"#2C2C2E",borderRadius:14,padding:"14px 16px",marginBottom:16}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div>
+              <div style={{fontSize:12,color:"#8E8E93",marginBottom:4}}>Daily total</div>
+              <div style={{fontSize:22,fontWeight:800,color:over?"#FF453A":"#fff"}}>{totalKcal} <span style={{fontSize:13,color:"#636366",fontWeight:400}}>kcal</span></div>
+            </div>
+            <div style={{textAlign:"right"}}>
+              <div style={{fontSize:12,color:"#8E8E93",marginBottom:4}}>Protein</div>
+              <div style={{fontSize:22,fontWeight:800,color:"#30D158"}}>{totalProt}g</div>
             </div>
           </div>
-
-          <div style={{padding:"16px 20px"}}>
-            {day.exercises.map(ex => {
-              const key = `${day.id}-${ex.name}`;
-              return (
-                <ExerciseCard
-                  key={ex.name}
-                  exercise={ex}
-                  color={day.color}
-                  completed={!!completedMap[key]}
-                  currentLevel={progressions[key] ?? 0}
-                  onToggle={() => onToggle(key)}
-                  onShowProgression={() => setSheet(ex)}
-                />
-              );
-            })}
-          </div>
-
-          {sheet && (
-            <ProgressionSheet
-              exercise={sheet}
-              currentLevel={progressions[`${day.id}-${sheet.name}`] ?? 0}
-              onSetLevel={lvl => onSetLevel(`${day.id}-${sheet.name}`, lvl)}
-              onClose={() => setSheet(null)}
-            />
-          )}
+          {over&&<div style={{fontSize:12,color:"#FF453A",marginTop:8}}>Over 1600 kcal — swap lunch or snack for a lighter option</div>}
         </div>
-      );
-    }
 
-    // ─── HOME ────────────────────────────────────────────────────────────────
-    function App() {
-      const [loaded, setLoaded]       = useState(false);
-      const [activeDay, setActiveDay] = useState(null);
-      const [completed, setCompleted] = useState({});
-      const [progressions, setProgressions] = useState({});
-      const [weekStart, setWeekStart] = useState(getWeekStart());
-      const [history, setHistory]     = useState([]);
-      const [saved, setSaved]         = useState(false);
-      const saveTimer = useRef(null);
+        <button
+          onClick={()=>{onSave({smoothie,lunch,snack});onClose();}}
+          disabled={!smoothie||!lunch||!snack}
+          style={{width:"100%",padding:"16px",borderRadius:14,background:(!smoothie||!lunch||!snack)?"#2C2C2E":"#FF6B35",border:"none",color:(!smoothie||!lunch||!snack)?"#636366":"#fff",fontSize:16,fontWeight:700,cursor:(!smoothie||!lunch||!snack)?"default":"pointer",outline:"none",marginBottom:4}}>
+          {(!smoothie||!lunch||!snack)?"Select all 3 meals to save":"Save Plan"}
+        </button>
+      </div>
+    </Sheet>
+  );
+}
 
-      // ── Load ──
-      useEffect(() => {
-        const data = loadState();
-        if (data) {
-          const curWeek = getWeekStart();
-          if (data.weekStart !== curWeek) {
-            setCompleted({});
-            setWeekStart(curWeek);
-          } else {
-            setCompleted(data.completed || {});
-            setWeekStart(data.weekStart || curWeek);
-          }
-          setProgressions(data.progressions || {});
-          setHistory(data.history || []);
-        }
-        setLoaded(true);
-      }, []);
+// ── NUTRITION TAB ─────────────────────────────────────────────────────────────
+function NutritionTab({mealPlan,onSavePlan}){
+  const [planner,setPlanner]=useState(null); // "today" | "tomorrow"
+  const today=dateStr();
+  const tomorrow=tomorrowStr();
 
-      // ── Save (debounced) ──
-      useEffect(() => {
-        if (!loaded) return;
-        clearTimeout(saveTimer.current);
-        saveTimer.current = setTimeout(() => {
-          saveState({ completed, progressions, weekStart, history });
-          setSaved(true);
-          setTimeout(() => setSaved(false), 1200);
-        }, 300);
-      }, [completed, progressions, weekStart, history, loaded]);
+  function DayPlanCard({label,ds,color}){
+    const plan=mealPlan[ds];
+    const s=plan&&SMOOTHIES.find(x=>x.id===plan.smoothie);
+    const l=plan&&LUNCHES.find(x=>x.id===plan.lunch);
+    const sn=plan&&SNACKS.find(x=>x.id===plan.snack);
+    const totalKcal=plan?(s?.kcal||0)+(l?.kcal||0)+(sn?.kcal||0)+DINNER.kcal:0;
+    const totalProt=plan?(s?.protein||0)+(l?.protein||0)+(sn?.protein||0)+DINNER.protein:0;
 
-      const toggleExercise = key => {
-        setCompleted(prev => {
-          const next = { ...prev, [key]: !prev[key] };
-          const [dayId] = key.split("-");
-          const day = DAYS.find(d => d.id === parseInt(dayId));
-          if (day) {
-            const allDone = day.exercises.every(e => next[`${day.id}-${e.name}`]);
-            const today = dateStr();
-            if (allDone) {
-              setHistory(h => {
-                if (h.some(x => x.date === today && x.dayId === day.id)) return h;
-                return [...h, { date: today, dayId: day.id }].slice(-90);
-              });
+    return(
+      <div style={{background:"#1C1C1E",borderRadius:20,padding:18,marginBottom:12}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:plan?14:0}}>
+          <div>
+            <div style={{fontSize:12,color:"#636366",marginBottom:2}}>{label}</div>
+            {plan
+              ?<div style={{fontSize:16,fontWeight:700,color:"#fff"}}>{totalKcal} kcal · {totalProt}g protein</div>
+              :<div style={{fontSize:14,color:"#8E8E93",marginTop:4}}>No plan yet</div>
             }
-          }
-          return next;
-        });
-      };
-
-      const setLevel = (key, lvl) => setProgressions(p => ({ ...p, [key]: lvl }));
-
-      const resetWeek = () => {
-        if (!window.confirm("Reset this week's check-offs? Progression levels stay.")) return;
-        setCompleted({});
-        setWeekStart(getWeekStart());
-      };
-
-      const getDayPct = day => {
-        const done = day.exercises.filter(e => completed[`${day.id}-${e.name}`]).length;
-        return Math.round((done / day.exercises.length) * 100);
-      };
-
-      const calcStreak = () => {
-        if (!history.length) return 0;
-        const dates = [...new Set(history.map(h => h.date))].sort().reverse();
-        let streak = 0;
-        let cur = new Date(); cur.setHours(0,0,0,0);
-        for (let i = 0; i < dates.length; i++) {
-          const exp = dateStr(cur);
-          const prev = dateStr(new Date(cur.getTime() - 86400000));
-          if (dates[i] === exp) {
-            streak++;
-            cur = new Date(cur.getTime() - 86400000);
-          } else if (i === 0 && dates[i] === prev) {
-            streak++;
-            cur = new Date(cur.getTime() - 86400000 * 2);
-          } else break;
-        }
-        return streak;
-      };
-
-      if (!loaded) return (
-        <div style={{
-          minHeight:"100vh",background:"#000",
-          display:"flex",alignItems:"center",justifyContent:"center",
-          color:"#636366",fontSize:14,
-        }}>Loading…</div>
-      );
-
-      if (activeDay) return (
-        <DayView
-          day={activeDay}
-          completedMap={completed}
-          progressions={progressions}
-          onToggle={toggleExercise}
-          onSetLevel={setLevel}
-          onBack={() => setActiveDay(null)}
-        />
-      );
-
-      const todayName = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][new Date().getDay()];
-      const weekDone = DAYS.filter(d => d.exercises.every(e => completed[`${d.id}-${e.name}`])).length;
-      const streak = calcStreak();
-
-      return (
-        <div style={{minHeight:"100vh",background:"#000",paddingBottom:40}}>
-
-          {/* Save badge */}
-          {saved && (
-            <div style={{
-              position:"fixed",top:"calc(14px + env(safe-area-inset-top))",right:16,zIndex:100,
-              background:"#1C1C1E",color:"#30D158",
-              fontSize:11,padding:"5px 10px",borderRadius:12,fontWeight:700,
-            }}>✓ Saved</div>
-          )}
-
-          {/* Header */}
-          <div style={{padding:"calc(56px + env(safe-area-inset-top)) 20px 8px"}}>
-            <div style={{fontSize:12,color:"#8E8E93",marginBottom:4,letterSpacing:0.5}}>YOUR PROGRAM</div>
-            <div style={{fontSize:34,fontWeight:800,color:"#fff",letterSpacing:-1}}>Home Workout</div>
-            <div style={{fontSize:15,color:"#636366",marginTop:4}}>4 days · Mon Tue Thu Fri</div>
           </div>
-
-          {/* Stats */}
-          <div style={{display:"flex",gap:10,padding:"20px 20px 4px"}}>
-            {[
-              { label:"Streak", value:streak, unit:"days", color:"#FF6B35" },
-              { label:"This Week", value:weekDone, unit:"/4", color:"#30D158" },
-            ].map(s => (
-              <div key={s.label} style={{flex:1,background:"#1C1C1E",borderRadius:16,padding:"14px 16px"}}>
-                <div style={{fontSize:11,color:"#8E8E93",textTransform:"uppercase",letterSpacing:0.5,marginBottom:6}}>{s.label}</div>
-                <div style={{fontSize:26,fontWeight:800,color:s.color}}>
-                  {s.value}
-                  <span style={{fontSize:14,color:"#636366",fontWeight:500,marginLeft:3}}>{s.unit}</span>
+          <button onClick={()=>setPlanner(ds)} style={{background:`${color}22`,border:`1px solid ${color}44`,borderRadius:10,padding:"7px 14px",color,fontSize:13,fontWeight:700,cursor:"pointer",outline:"none",flexShrink:0}}>
+            {plan?"Edit":"Plan"}
+          </button>
+        </div>
+        {plan&&(
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {[{emoji:"🌅",name:s?.name,detail:"Breakfast"},{emoji:"☀️",name:l?.name,detail:"Lunch"},{emoji:"🥜",name:sn?.name,detail:"Snack"},{emoji:"🌙",name:"Dal + Rice",detail:"Dinner"}].map((m,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:10}}>
+                <span style={{fontSize:18,flexShrink:0}}>{m.emoji}</span>
+                <div>
+                  <div style={{fontSize:12,color:"#636366"}}>{m.detail}</div>
+                  <div style={{fontSize:13,fontWeight:600,color:"#EBEBF5"}}>{m.name||"—"}</div>
                 </div>
               </div>
             ))}
           </div>
+        )}
+      </div>
+    );
+  }
 
-          {/* Week strip */}
-          <div style={{display:"flex",gap:8,padding:"16px 20px",overflowX:"auto"}}>
-            {WEEK_DAYS.map(d => {
-              const dayData = DAYS.find(wd => wd.schedule === d);
-              const isToday = d === todayName;
-              const pct = dayData ? getDayPct(dayData) : 0;
-              return (
-                <div
-                  key={d}
-                  onClick={() => dayData && setActiveDay(dayData)}
-                  style={{flexShrink:0,width:44,textAlign:"center",cursor:dayData?"pointer":"default"}}
-                >
-                  <div style={{fontSize:11,color:isToday?"#fff":"#636366",marginBottom:6,fontWeight:isToday?700:400}}>
-                    {d}
-                  </div>
-                  <div style={{
-                    width:44,height:44,borderRadius:"50%",
-                    background:dayData?`${dayData.color}22`:"#1C1C1E",
-                    border:isToday?`2px solid ${dayData?.color||"#636366"}`:"2px solid transparent",
-                    display:"flex",alignItems:"center",justifyContent:"center",
-                    fontSize:18,position:"relative",
-                  }}>
-                    {dayData ? dayData.emoji : <span style={{color:"#636366",fontSize:11}}>—</span>}
-                    {pct===100 && (
-                      <div style={{
-                        position:"absolute",top:-2,right:-2,
-                        width:15,height:15,borderRadius:"50%",
-                        background:"#30D158",border:"2px solid #000",
-                        display:"flex",alignItems:"center",justifyContent:"center",
-                        fontSize:9,color:"#fff",
-                      }}>✓</div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+  return(
+    <div style={{minHeight:"100vh",background:"#000",paddingBottom:100}}>
+      <div style={{padding:"calc(54px + env(safe-area-inset-top)) 20px 8px"}}>
+        <div style={{fontSize:12,color:"#8E8E93",marginBottom:4,letterSpacing:0.5}}>MEAL PLANNING</div>
+        <div style={{fontSize:34,fontWeight:800,color:"#fff",letterSpacing:-1}}>Nutrition</div>
+        <div style={{fontSize:15,color:"#636366",marginTop:4}}>~1600 kcal · 100–135g protein</div>
+      </div>
 
-          {/* Day cards */}
-          <div style={{padding:"8px 20px"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-              <div style={{fontSize:20,fontWeight:700,color:"#fff"}}>This Week</div>
-              <button onClick={resetWeek} style={{
-                background:"none",border:"none",color:"#8E8E93",
-                fontSize:13,cursor:"pointer",fontWeight:500,outline:"none",
-              }}>Reset week</button>
-            </div>
+      <div style={{padding:"16px 20px"}}>
+        <DayPlanCard label="Today" ds={today} color="#FF6B35"/>
+        <DayPlanCard label="Tomorrow" ds={tomorrow} color="#4ECDC4"/>
 
-            {DAYS.map(day => {
-              const pct = getDayPct(day);
-              return (
-                <div
-                  key={day.id}
-                  onClick={() => setActiveDay(day)}
-                  style={{
-                    background:"#1C1C1E",borderRadius:20,padding:18,
-                    marginBottom:12,cursor:"pointer",position:"relative",overflow:"hidden",
-                  }}
-                >
-                  <div style={{
-                    position:"absolute",top:0,left:0,bottom:0,width:4,
-                    background:day.color,borderRadius:"20px 0 0 20px",
-                  }}/>
-                  <div style={{paddingLeft:8}}>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                      <div>
-                        <div style={{fontSize:12,color:"#636366",marginBottom:2}}>{day.day} · {day.schedule}</div>
-                        <div style={{fontSize:20,fontWeight:700,color:"#fff"}}>{day.emoji} {day.title}</div>
-                        <div style={{fontSize:13,color:"#8E8E93",marginTop:2}}>{day.subtitle}</div>
-                      </div>
-                      <div style={{
-                        fontSize:12,color:day.color,fontWeight:700,
-                        background:`${day.color}18`,padding:"4px 10px",borderRadius:20,flexShrink:0,
-                      }}>
-                        {day.exercises.length} ex
-                      </div>
-                    </div>
-                    <div style={{marginTop:14}}>
-                      <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-                        <span style={{fontSize:12,color:"#636366"}}>Progress</span>
-                        <span style={{fontSize:12,color:pct===100?"#30D158":"#636366"}}>
-                          {pct===100?"Complete ✓":`${pct}%`}
-                        </span>
-                      </div>
-                      <div style={{height:4,background:"#2C2C2E",borderRadius:2,overflow:"hidden"}}>
-                        <div style={{
-                          height:"100%",width:`${pct}%`,
-                          background:pct===100?"#30D158":day.color,
-                          borderRadius:2,transition:"width 0.35s ease",
-                        }}/>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* Tip */}
-            <div style={{background:"#1C1C1E",borderRadius:20,padding:18,marginTop:4}}>
-              <div style={{fontSize:13,color:"#FF6B35",fontWeight:700,marginBottom:8}}>💡 How progressions work</div>
-              <div style={{fontSize:14,color:"#8E8E93",lineHeight:1.6}}>
-                Tap the <span style={{color:"#fff",fontWeight:700}}>L1 / L2 / …</span> button on any exercise to mark your current level. When you hit the top of the rep range with clean form on all sets, level up.
-              </div>
-            </div>
-          </div>
+        {/* Dinner reminder */}
+        <div style={{background:"rgba(168,85,247,0.1)",border:"1px solid rgba(168,85,247,0.3)",borderRadius:16,padding:"14px 16px",marginBottom:12}}>
+          <div style={{fontSize:13,color:"#A855F7",fontWeight:700,marginBottom:6}}>🌙 Dinner — every night</div>
+          <div style={{fontSize:14,color:"#EBEBF5",marginBottom:4}}>Dal + Rice</div>
+          <div style={{fontSize:12,color:"#8E8E93",lineHeight:1.5}}>Rotate dal: masoor / moong / toor<br/>Add 1 boiled egg for extra 6g protein (+70 kcal)</div>
         </div>
-      );
+
+        {/* Tips */}
+        <div style={{background:"#1C1C1E",borderRadius:16,padding:"14px 16px"}}>
+          <div style={{fontSize:13,color:"#FF9500",fontWeight:700,marginBottom:10}}>💡 Key rules</div>
+          {["Keep under 1600 kcal — palak chicken lunch days are your best protein days","Cook dal in bulk — lasts 4 days in fridge","On office days (Wed/Thu) — chicken fillet roll is fine, count it as lunch","If hungry after dinner — 1 boiled egg only, not a full snack"].map((t,i)=>(
+            <div key={i} style={{fontSize:13,color:"#8E8E93",lineHeight:1.5,marginBottom:i<3?8:0,paddingLeft:12,borderLeft:"2px solid #2C2C2E"}}>
+              {t}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {planner&&(
+        <MealPlannerSheet
+          targetDate={planner}
+          existing={mealPlan[planner]}
+          onSave={plan=>onSavePlan(planner,plan)}
+          onClose={()=>setPlanner(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── SUPPLEMENTS TAB ───────────────────────────────────────────────────────────
+function SuppsTab({suppLog,onToggleSupp}){
+  const today=dateStr();
+  const todayLog=suppLog[today]||{};
+  const doneCount=SUPPLEMENTS.filter(s=>todayLog[s.id]).length;
+
+  return(
+    <div style={{minHeight:"100vh",background:"#000",paddingBottom:100}}>
+      <div style={{padding:"calc(54px + env(safe-area-inset-top)) 20px 8px"}}>
+        <div style={{fontSize:12,color:"#8E8E93",marginBottom:4,letterSpacing:0.5}}>CANNABIS BREAK STACK</div>
+        <div style={{fontSize:34,fontWeight:800,color:"#fff",letterSpacing:-1}}>Supplements</div>
+        <div style={{fontSize:15,color:"#636366",marginTop:4}}>{doneCount}/{SUPPLEMENTS.length} taken today</div>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{padding:"8px 20px 16px"}}>
+        <div style={{height:6,background:"#1C1C1E",borderRadius:3,overflow:"hidden"}}>
+          <div style={{height:"100%",width:`${(doneCount/SUPPLEMENTS.length)*100}%`,background:"#30D158",borderRadius:3,transition:"width 0.35s ease"}}/>
+        </div>
+      </div>
+
+      <div style={{padding:"0 20px"}}>
+        {SUPP_GROUPS.map(group=>{
+          const items=SUPPLEMENTS.filter(s=>s.time===group);
+          if(!items.length)return null;
+          return(
+            <div key={group} style={{marginBottom:24}}>
+              <div style={{fontSize:13,color:"#8E8E93",fontWeight:600,textTransform:"uppercase",letterSpacing:0.8,marginBottom:10}}>{group}</div>
+              {items.map(s=>{
+                const done=!!todayLog[s.id];
+                return(
+                  <button key={s.id} onClick={()=>onToggleSupp(s.id)} style={{width:"100%",background:done?`${s.color}18`:"#1C1C1E",border:done?`1.5px solid ${s.color}44`:"1.5px solid transparent",borderRadius:16,padding:"14px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:14,cursor:"pointer",outline:"none",textAlign:"left"}}>
+                    <div style={{width:36,height:36,borderRadius:"50%",flexShrink:0,background:done?s.color:"#2C2C2E",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,transition:"background 0.2s"}}>
+                      {done?"✓":s.emoji}
+                    </div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
+                        <span style={{fontSize:15,fontWeight:700,color:done?s.color:"#EBEBF5"}}>{s.name}</span>
+                        <span style={{fontSize:12,color:done?s.color:"#636366",fontWeight:600}}>{s.dose}</span>
+                      </div>
+                      <div style={{fontSize:12,color:"#636366",lineHeight:1.4}}>{s.note}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          );
+        })}
+
+        <div style={{background:"#1C1C1E",borderRadius:16,padding:"14px 16px",marginBottom:24}}>
+          <div style={{fontSize:13,color:"#BF5AF2",fontWeight:700,marginBottom:8}}>💊 Why this stack</div>
+          <div style={{fontSize:13,color:"#8E8E93",lineHeight:1.6}}>L-Tyrosine + Ashwagandha support dopamine regulation during the break. Magnesium fixes sleep disruption. L-Theanine handles anxiety and cravings as needed. D3 and Omega-3 for baseline wellbeing.</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── MAIN APP ──────────────────────────────────────────────────────────────────
+function App(){
+  const [loaded,setLoaded]=useState(false);
+  const [tab,setTab]=useState("workout");
+  const [completed,setCompleted]=useState({});
+  const [progressions,setProgressions]=useState({});
+  const [weekStart,setWeekStart]=useState(getWeekStart());
+  const [history,setHistory]=useState([]);
+  const [mealPlan,setMealPlan]=useState({});
+  const [suppLog,setSuppLog]=useState({});
+  const [saved,setSaved]=useState(false);
+  const saveTimer=useRef(null);
+
+  useEffect(()=>{
+    const data=load();
+    if(data){
+      const curWeek=getWeekStart();
+      if(data.weekStart!==curWeek){setCompleted({});setWeekStart(curWeek);}
+      else{setCompleted(data.completed||{});setWeekStart(data.weekStart||curWeek);}
+      setProgressions(data.progressions||{});
+      setHistory(data.history||[]);
+      setMealPlan(data.mealPlan||{});
+      setSuppLog(data.suppLog||{});
     }
+    setLoaded(true);
+  },[]);
 
-    const root = ReactDOM.createRoot(document.getElementById("root"));
-    root.render(<App />);
-  </script>
+  useEffect(()=>{
+    if(!loaded)return;
+    clearTimeout(saveTimer.current);
+    saveTimer.current=setTimeout(()=>{
+      save({completed,progressions,weekStart,history,mealPlan,suppLog});
+      setSaved(true);setTimeout(()=>setSaved(false),1200);
+    },350);
+  },[completed,progressions,weekStart,history,mealPlan,suppLog,loaded]);
 
+  const toggleExercise=key=>{
+    setCompleted(prev=>{
+      const next={...prev,[key]:!prev[key]};
+      const [dayId]=key.split("-");
+      const day=DAYS.find(d=>d.id===parseInt(dayId));
+      if(day&&day.exercises.every(e=>next[`${day.id}-${e.name}`])){
+        const td=dateStr();
+        setHistory(h=>h.some(x=>x.date===td&&x.dayId===day.id)?h:[...h,{date:td,dayId:day.id}].slice(-90));
+      }
+      return next;
+    });
+  };
+
+  const setLevel=(key,lvl)=>setProgressions(p=>({...p,[key]:lvl}));
+
+  const resetWeek=()=>{
+    if(!window.confirm("Reset this week's check-offs? Progression levels stay."))return;
+    setCompleted({});setWeekStart(getWeekStart());
+  };
+
+  const savePlan=(ds,plan)=>setMealPlan(p=>({...p,[ds]:plan}));
+
+  const toggleSupp=id=>{
+    const today=dateStr();
+    setSuppLog(prev=>({...prev,[today]:{...prev[today],[id]:!(prev[today]||{})[id]}}));
+  };
+
+  if(!loaded)return<div style={{minHeight:"100vh",background:"#000",display:"flex",alignItems:"center",justifyContent:"center",color:"#636366",fontSize:14}}>Loading…</div>;
+
+  return(
+    <div style={{background:"#000",minHeight:"100vh"}}>
+      {saved&&<div style={{position:"fixed",top:"calc(14px + env(safe-area-inset-top))",right:16,zIndex:100,background:"#1C1C1E",color:"#30D158",fontSize:11,padding:"5px 10px",borderRadius:12,fontWeight:700}}>✓ Saved</div>}
+
+      {tab==="workout"&&<WorkoutTab completed={completed} progressions={progressions} history={history} onToggle={toggleExercise} onSetLevel={setLevel} onResetWeek={resetWeek}/>}
+      {tab==="nutrition"&&<NutritionTab mealPlan={mealPlan} onSavePlan={savePlan}/>}
+      {tab==="supps"&&<SuppsTab suppLog={suppLog} onToggleSupp={toggleSupp}/>}
+
+      <TabBar active={tab} onChange={setTab}/>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
 </body>
 </html>
