@@ -72,17 +72,17 @@ const SMOOTHIES=[
 ];
 
 const LUNCHES=[
-  {id:"chole-rice",name:"Chole + Rice",emoji:"🫘",items:["1 cup cooked chole","1 cup rice"],kcal:480,protein:22,note:"Batch cook — lasts 3 days"},
-  {id:"rajma-rice",name:"Rajma + Rice",emoji:"🫘",items:["1 cup cooked rajma","1 cup rice","1 boiled egg"],kcal:500,protein:26,note:"Add egg for extra protein"},
-  {id:"palak-chicken",name:"Palak Chicken + Rice",emoji:"🍗",items:["150g chicken in palak sauce","1 cup rice"],kcal:520,protein:42,note:"Best protein day"},
-  {id:"mushroom-egg",name:"Mushroom Egg Bhurji + Tortilla",emoji:"🍳",items:["2 eggs scrambled","150g mushrooms","1 protein tortilla"],kcal:400,protein:28,note:"15 min cook"},
-  {id:"paneer-biryani",name:"Paneer Biryani",emoji:"🍛",items:["150g paneer","1.5 cups biryani rice"],kcal:600,protein:30,note:"Weekend treat"},
-  {id:"egg-fried-rice",name:"Egg Fried Rice",emoji:"🍳",items:["2 eggs","1 cup rice","mixed veg","soy sauce"],kcal:450,protein:22,note:"Fast desi style"},
-  {id:"palak-paneer",name:"Palak Paneer + Tortilla",emoji:"🧀",items:["150g paneer","palak sauce","1 protein tortilla"],kcal:500,protein:28,note:"Rich and filling"},
-  {id:"chicken-curry",name:"Chicken Curry + Rice",emoji:"🍗",items:["150g chicken curry","1 cup rice"],kcal:550,protein:42,note:"Batch cook"},
-  {id:"mushroom-palak",name:"Mushroom Palak + Eggs + Rice",emoji:"🍄",items:["150g mushroom palak","2 boiled eggs","1 cup rice"],kcal:450,protein:24,note:"Pure veg day"},
-  {id:"egg-curry",name:"Egg Curry + Rice",emoji:"🥚",items:["2 egg curry","1 cup rice"],kcal:440,protein:24,note:"Quick option"},
-  {id:"office-roll",name:"Chicken Fillet Roll",emoji:"🥖",items:["chicken fillet roll","lettuce, onion, cheese"],kcal:550,protein:38,note:"Office days — Wed/Thu"},
+  {id:"chole-rice",name:"Chole + Dal + Rice",emoji:"🫘",items:["1 cup cooked chole","1 cup dal","1 cup rice"],kcal:660,protein:34,note:"Batch cook — lasts 3 days"},
+  {id:"rajma-rice",name:"Rajma + Dal + Rice",emoji:"🫘",items:["1 cup cooked rajma","1 cup dal","1 cup rice","1 boiled egg"],kcal:680,protein:38,note:"Add egg for extra protein"},
+  {id:"palak-chicken",name:"Palak Chicken + Dal + Rice",emoji:"🍗",items:["150g chicken in palak sauce","1 cup dal","1 cup rice"],kcal:700,protein:54,note:"Best protein day"},
+  {id:"mushroom-egg",name:"Mushroom Egg Bhurji + Dal + Tortilla",emoji:"🍳",items:["2 eggs scrambled","150g mushrooms","1 cup dal","1 protein tortilla"],kcal:580,protein:40,note:"15 min cook"},
+  {id:"paneer-biryani",name:"Paneer Biryani + Dal",emoji:"🍛",items:["150g paneer","1.5 cups biryani rice","1 cup dal"],kcal:780,protein:42,note:"Weekend treat"},
+  {id:"egg-fried-rice",name:"Egg Fried Rice + Dal",emoji:"🍳",items:["2 eggs","1 cup rice","mixed veg","soy sauce","1 cup dal"],kcal:630,protein:34,note:"Fast desi style"},
+  {id:"palak-paneer",name:"Palak Paneer + Dal + Tortilla",emoji:"🧀",items:["150g paneer","palak sauce","1 cup dal","1 protein tortilla"],kcal:680,protein:40,note:"Rich and filling"},
+  {id:"chicken-curry",name:"Chicken Curry + Dal + Rice",emoji:"🍗",items:["150g chicken curry","1 cup dal","1 cup rice"],kcal:730,protein:54,note:"Batch cook"},
+  {id:"mushroom-palak",name:"Mushroom Palak + Eggs + Dal + Rice",emoji:"🍄",items:["150g mushroom palak","2 boiled eggs","1 cup dal","1 cup rice"],kcal:630,protein:36,note:"Pure veg day"},
+  {id:"egg-curry",name:"Egg Curry + Dal + Rice",emoji:"🥚",items:["2 egg curry","1 cup dal","1 cup rice"],kcal:620,protein:36,note:"Quick option"},
+  {id:"office-roll",name:"Chicken Fillet Roll",emoji:"🥖",items:["chicken fillet roll","lettuce, onion, cheese"],kcal:550,protein:38,note:"Office days — Wed/Thu, no dal needed"},
 ];
 
 const SNACKS=[
@@ -305,7 +305,7 @@ function MealPlannerSheet({targetDate,existing,onSave,onClose}){
   const selSn=SNACKS.find(s=>s.id===snack);
   const totalKcal=(selS?.kcal||0)+(selL?.kcal||0)+(selSn?.kcal||0)+DINNER.kcal;
   const totalProt=(selS?.protein||0)+(selL?.protein||0)+(selSn?.protein||0)+DINNER.protein;
-  const over=totalKcal>1600;
+  const over=totalKcal>1900;
 
   const label=targetDate===dateStr()?"Today":targetDate===tomorrowStr()?"Tomorrow":dayName(targetDate);
 
@@ -373,7 +373,7 @@ function MealPlannerSheet({targetDate,existing,onSave,onClose}){
               <div style={{fontSize:22,fontWeight:800,color:"#30D158"}}>{totalProt}g</div>
             </div>
           </div>
-          {over&&<div style={{fontSize:12,color:"#FF453A",marginTop:8}}>Over 1600 kcal — swap lunch or snack for a lighter option</div>}
+          {over&&<div style={{fontSize:12,color:"#FF453A",marginTop:8}}>Over 1900 kcal — swap lunch or snack for a lighter option</div>}
         </div>
 
         <button
@@ -437,7 +437,7 @@ function NutritionTab({mealPlan,onSavePlan}){
       <div style={{padding:"calc(54px + env(safe-area-inset-top)) 20px 8px"}}>
         <div style={{fontSize:12,color:"#8E8E93",marginBottom:4,letterSpacing:0.5}}>MEAL PLANNING</div>
         <div style={{fontSize:34,fontWeight:800,color:"#fff",letterSpacing:-1}}>Nutrition</div>
-        <div style={{fontSize:15,color:"#636366",marginTop:4}}>~1600 kcal · 100–135g protein</div>
+        <div style={{fontSize:15,color:"#636366",marginTop:4}}>1600–1900 kcal · 110–140g protein</div>
       </div>
 
       <div style={{padding:"16px 20px"}}>
@@ -454,7 +454,7 @@ function NutritionTab({mealPlan,onSavePlan}){
         {/* Tips */}
         <div style={{background:"#1C1C1E",borderRadius:16,padding:"14px 16px"}}>
           <div style={{fontSize:13,color:"#FF9500",fontWeight:700,marginBottom:10}}>💡 Key rules</div>
-          {["Keep under 1600 kcal — palak chicken lunch days are your best protein days","Cook dal in bulk — lasts 4 days in fridge","On office days (Wed/Thu) — chicken fillet roll is fine, count it as lunch","If hungry after dinner — 1 boiled egg only, not a full snack"].map((t,i)=>(
+          {["Dal is now base at lunch — target 1600–1900 kcal daily","Cook dal in bulk — lasts 4 days in fridge","On office days (Wed/Thu) — chicken fillet roll is fine, count it as lunch","If hungry after dinner — 1 boiled egg only, not a full snack"].map((t,i)=>(
             <div key={i} style={{fontSize:13,color:"#8E8E93",lineHeight:1.5,marginBottom:i<3?8:0,paddingLeft:12,borderLeft:"2px solid #2C2C2E"}}>
               {t}
             </div>
